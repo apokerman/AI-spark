@@ -96,7 +96,6 @@ def on_message(ws, message):
         if status == 2:
             ws.close()
 
-
 def gen_params(appid, domain,question):
     """
     通过appid和用户的提问来生成请参数
