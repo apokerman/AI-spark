@@ -8,8 +8,8 @@ socketio = SocketIO(app)
 appid = "2a3819f8"
 api_secret = "MDJkYTFhMDcwMGRhM2JlZWIxNTM3N2U0"
 api_key = "03dafe10751ca962a412faedf9fdbfb0"
-domain = "generalv2"
-Spark_url = "ws://spark-api.xf-yun.com/v2.1/chat"
+domain = "generalv3.5"
+Spark_url = "wss://spark-api.xf-yun.com/v3.5/chat"
 spark_urls = [
     "ws://spark-openapi.cn-huabei-1.xf-yun.com/v1/assistants/hh3j3w7vt7gc_v1",
     "ws://spark-openapi.cn-huabei-1.xf-yun.com/v1/assistants/q55l2njozbkb_v1",
