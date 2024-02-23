@@ -12,10 +12,10 @@
 ```
 pip install Flask Flask-SocketIO eventlet
 ```
+```
 在终端运行lunch.py
 ```
 python lunch.py
-```
 
 ```
 在浏览器打开127.0.0.1:5000
