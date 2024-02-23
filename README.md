@@ -9,18 +9,18 @@
 
 在运行之前，请确保安装了以下库：
 
-```
-pip install Flask Flask-SocketIO eventlet
-```
-```
-在终端运行lunch.py
-```
-python lunch.py
+##终端运行pip
 
+pip install Flask Flask-SocketIO eventlet
+
+
+##在终端运行lunch.py
+
+python lunch.py
 ```
 在浏览器打开127.0.0.1:5000
 ```
-
+127.0.0.1:5000
 
 ## 报错处理
 
