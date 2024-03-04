@@ -81,7 +81,7 @@ def handle_checkbox_click(message):
 def handle_disconnect():
     print('Client disconnected')
 
-
+#input
 @socketio.on('user_input')
 def handle_user_input(message):
     user_input = message['data']
