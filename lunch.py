@@ -65,7 +65,7 @@ def checklen(text):
 def index():
     return render_template('index.html')
 
-
+#连接
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
