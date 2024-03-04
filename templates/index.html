@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spark Chat</title>
+    <style>
+        /* 添加样式来调整布局 */
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .content {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Updated CSS for the left sidebar with a fixed height and scrolling */
+        .left-sidebar {
+            flex: 0.7;
+            background-color: #f0f0f0;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 100%; /* Set the maximum height to 100% of its container (the body) */
+        }
+
+        /* Rest of the CSS remains the same as previously provided */
+        .radio-group {
+            margin-bottom: 15px;
+        }
+
+        .nav-category {
+            font-weight: bold;
+            padding: 8px 5px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            cursor: pointer; /* 将鼠标光标设置为手掌形状 */
+            transition: color 0.002s ease-in-out; /* 添加颜色渐变效果 */
+        }
+
+        .nav-category:hover {
+            color: #007bff; /* 悬停时的颜色 */
+        }
+
+        .category-content {
+            display: none;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 8px 20px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            transition: background-color 0.002s ease-in-out, color 0.002s ease-in-out;
+        }
+
+        .nav-item:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .right-content {
+            flex: 5;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #display {
+            flex: 4;
+            background-color: #ffffff;
+            overflow-y: auto;
+            padding: 10px; /* Add padding to the display element */
+        }
+
+        .input-container {
+            flex: 0.5; /* 下面的输入框和提交按钮占据20%的高度 */
+            display: flex;
+            justify-content: space-between; /* 输入框和按钮水平居中对齐 */
+            align-items: center; /* 垂直居中对齐 */
+            margin-top: 10px; /* 添加一些上边距 */
+        }
+
+        input[type="text"] {
+            flex: 3.6;
+            padding: 10px;
+            resize: none; /* Disable user resizing */
+            overflow-y: hidden; /* Hide vertical scrollbar */
+            border: 1px solid #ccc; /* Add a border for a textarea-like appearance */
+        }
+
+        button {
+            flex: 0.6; /* Adjusted width for the submit button */
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px; /* Added margin to separate it from the input field */
+        }
+
+        .nav-item.active {
+            background-color: #007bff; /* 高亮的背景色 */
+            color: #fff; /* 高亮的文字颜色 */
+        }
+
+        textarea {
+            flex: 2;
+            padding: 10px;
+            resize: none;
+            overflow-y: hidden;
+            border: 1px solid #ccc;
+            line-height: 1.5;
+        }
+
+        .nav-category:hover {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer; /* 将光标形状设置为手掌 */
+        }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var selectedRadio = null;
+
+        socket.on('connect', function () {
+            socket.emit('my event', {data: 'I\'m connected!'});
+        });
+
+        socket.on('message', function (message) {
+            // Create a new message element
+            var messageElement = document.createElement('p');
+            messageElement.textContent = message.data;
+
+            // Check the message type and set the appropriate class and background color
+            if (message.type === 'assistant') {
+                messageElement.classList.add('assistant-message');
+                messageElement.style.backgroundColor = '#c1c1c8"'; // 设置助手回复的背景颜色
+            } 
+            if (message.type === 'user') {
+                messageElement.classList.add('user-message');
+                messageElement.style.backgroundColor = '#dbdbef'; // 设置用户输入的背景颜色
+            }
+
+            // Append the new message element to the display area
+            var display = document.getElementById('display');
+            display.appendChild(messageElement);
+
+            // Trigger a reflow to apply the CSS transition
+            messageElement.offsetHeight;
+
+            // Add the 'active' class to initiate the transition
+            messageElement.classList.add('active');
+
+            // Scroll to the bottom to show the latest message
+            display.scrollTop = display.scrollHeight;
+        });
+
+        function sendMessage() {
+            var userInput = document.getElementById('userInput').value;
+            socket.emit('user_input', {data: userInput});
+            document.getElementById('userInput').value = '';
+        }
+
+        function handleRadioClick(radioNumber) {
+            // Send the selected number to the backend
+            var radioId = 'radio' + radioNumber;
+            var radioElements = document.getElementsByClassName('nav-item');
+
+            for (var i = 0; i < radioElements.length; i++) {
+                var radioElement = radioElements[i];
+
+                // 移除所有项的高亮类
+                radioElement.classList.remove('active');
+            }
+
+            // 添加当前选中的项的高亮类
+            radioElements[radioNumber].classList.add('active');
+            socket.emit('radio_click', {data: radioNumber});
+        }
+
+        function adjustTextareaHeight(textarea) {
+            // Get the number of rows based on the scrollHeight and the line-height
+            const numRows = Math.floor(textarea.scrollHeight / parseFloat(getComputedStyle(textarea).lineHeight));
+
+            // Check if the number of rows is greater than the specified maxRows
+            if (numRows > textarea.getAttribute('maxRows')) {
+                textarea.style.overflowY = 'scroll'; // Enable vertical scrollbar
+                textarea.style.height = `${textarea.getAttribute('maxRows') * parseFloat(getComputedStyle(textarea).lineHeight)}px`;
+            } else if (numRows < 4) {
+                textarea.style.overflowY = 'hidden'; // Hide vertical scrollbar
+                textarea.style.height = 'auto'; // Reset the height to auto
+            }
+        }
+
+        function toggleCategory(titleElement) {
+            // 找到标题所属的分类别内容区域
+            var categoryContent = titleElement.nextElementSibling;
+
+            // 检查内容区域的可见性
+            if (categoryContent.style.display === 'block') {
+                // 如果内容可见，则隐藏它
+                categoryContent.style.display = 'none';
+            } else {
+                // 否则，显示内容
+                categoryContent.style.display = 'block';
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="content">
+    <div class="left-sidebar">
+        <!-- 岗位招聘 -->
+        <div class="radio-group">
+            <div class="nav-category" onclick="toggleCategory(this)">岗位招聘</div>
+            <div class="category-content">
+                <div class="nav-item" onclick="handleRadioClick(0)">招聘JD助手</div>
+                <div class="nav-item" onclick="handleRadioClick(1)">面试问题模拟</div>
+                <div class="nav-item" onclick="handleRadioClick(2)">招聘广告文案</div>
+                <div class="nav-item" onclick="handleRadioClick(3)">面试通知邮件</div>
+            </div>
+        </div>
+
+        <!-- 工作文档 -->
+        <div class="radio-group">
+            <div class="nav-category" onclick="toggleCategory(this)">工作文档</div>
+            <div class="category-content">
+                <div class="nav-item" onclick="handleRadioClick(4)">PPT模板</div>
+                <div class="nav-item" onclick="handleRadioClick(5)">EXCEL公式</div>
+            </div>
+        </div>
+
+        <!-- 客户服务 -->
+        <div class="radio-group">
+            <div class="nav-category" onclick="toggleCategory(this)">客户服务</div>
+            <div class="category-content">
+                <div class="nav-item" onclick="handleRadioClick(6)">客诉处理</div>
+                <div class="nav-item" onclick="handleRadioClick(7)">职场读心术</div>
+                <div class="nav-item" onclick="handleRadioClick(8)">接待流程</div>
+                <div class="nav-item" onclick="handleRadioClick(9)">活动策划</div>
+                <div class="nav-item" onclick="handleRadioClick(10)">产品说明书</div>
+                <div class="nav-item" onclick="handleRadioClick(11)">周报小助理</div>
+                <div class="nav-item" onclick="handleRadioClick(12)">通知文案</div>
+            </div>
+        </div>
+
+        <!-- 编程和技术 -->
+        <div class="radio-group">
+            <div class="nav-category" onclick="toggleCategory(this)">编程和技术</div>
+            <div class="category-content">
+                <div class="nav-item" onclick="handleRadioClick(13)">命令行/脚本</div>
+                <div class="nav-item" onclick="handleRadioClick(14)">正则小助手</div>
+                <div class="nav-item" onclick="handleRadioClick(15)">Python工程师</div>
+                <div class="nav-item" onclick="handleRadioClick(16)">SQL生成器</div>
+                <div class="nav-item" onclick="handleRadioClick(17)">代码工程师</div>
+            </div>
+        </div>
+
+        <!-- 生活和娱乐 -->
+        <div class="radio-group">
+            <div class="nav-category" onclick="toggleCategory(this)">生活和娱乐</div>
+            <div class="category-content">
+                <div class="nav-item" onclick="handleRadioClick(18)">旅游攻略</div>
+                <div class="nav-item" onclick="handleRadioClick(19)">购车助手</div>
+                <div class="nav-item" onclick="handleRadioClick(20)">情感助手</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-content">
+        <div id="display"></div>
+        <div class="input-container">
+            <textarea id="userInput" placeholder="请输入内容" oninput="adjustTextareaHeight(this)" maxRows="4"></textarea>
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
