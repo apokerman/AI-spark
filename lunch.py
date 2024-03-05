@@ -69,7 +69,7 @@ def index():
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
-    emit('message', {'data': '连接成功！'})
+    emit('message', {'data': '连接成功！！！'})
 
 @socketio.on('radio_click')
 def handle_checkbox_click(message):
